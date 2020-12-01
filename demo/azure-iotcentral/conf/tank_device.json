@@ -1,0 +1,34 @@
+{
+  "properites": {
+    "source": [
+      {
+        "name": "device",
+        "properties": [
+          {
+            "name": "general",
+            "events": ["device", "general"],
+            "desired": {
+              "path": "/device/general",
+              "method": "PATCH"
+            },
+            "source": {
+              "path": "/device/general",
+              "method": "GET"
+            }
+          }
+        ]
+      }
+    ],
+    "selections": {
+      "device": {
+        "general": [
+          {
+            "source": "",
+            "reportedPath": "general",
+            "desiredPath": "general"
+          }
+        ]
+      }
+    }
+  }
+}

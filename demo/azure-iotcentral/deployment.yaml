@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: northbound-daemon
+  labels:
+    app: northbound
+spec:
+  selector:
+    matchLabels:
+      app: northbound
+  template:
+    metadata:
+      labels:
+        app: northbound
+    spec:
+      initContainers:
+      - name: node2pod
+        image: busybox:1.28
+        command:
+        - "sh"
+        - "-c"
+        - "cat /var/thingspro/${NODE_NAME} > /tmp/azuredevice.json"
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: connection-volume
+          mountPath: /tmp/azuredevice.json
+        - name: azure-volume
+          mountPath: /var/thingspro
+      containers:
+      - name: cloud
+        image: bibbylong/iiot-clouds:2.2.0-armhf
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: azure-volume
+          mountPath: /var/thingspro/cloud/env/product.json
+          subPath: product
+        - name: azure-volume
+          mountPath: /var/thingspro/cloud/setting/.configuration
+          subPath: application
+        - name: azure-volume
+          mountPath: /var/thingspro/cloud/setting/twin/azuredevice-1.json
+          subPath: twin
+        - name: connection-volume
+          mountPath: /var/thingspro/cloud/setting/azuredevice/azuredevice.json
+      volumes:
+      - name: azure-volume
+        configMap:
+          name: azure-config
+      - name: connection-volume
+        hostPath:
+          path: /tmp/azuredevice.json
+          type: FileOrCreate

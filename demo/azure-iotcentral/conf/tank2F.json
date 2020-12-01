@@ -1,0 +1,14 @@
+{
+    "provisioning": {
+      "connectionString": "HostName=iotc-c950f75e-1aee-4ae5-8398-ae9344936442.azure-devices.net;DeviceId=3eg45daje5;SharedAccessKey=pTeHSQxw64ilUe+Wxy+hA3yK/X+Q7tGXKq7vAbvQn5w=",
+      "authenticationType": "symmetricKey",
+      "enable": true,
+      "supportTwin": true,
+      "retryInterval": 10,
+      "keepAlive": 10,
+      "protocol": {
+        "protocol": "mqtt",
+        "port": 8883
+      }
+    }
+  }

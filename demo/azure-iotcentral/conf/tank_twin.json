@@ -1,0 +1,34 @@
+{
+  "properties": [
+    {
+      "name": "device app",
+      "properties": [
+        {
+          "name": "general",
+          "desired": {
+            "path": "/device/general",
+            "method": "PATCH"
+          },
+          "source": {
+            "path": "/device/general",
+            "method": "GET"
+          }
+        }
+      ]
+    }
+  ],
+  "selections": {
+    "device app": {
+      "general": [
+        {
+          "urlModePath": "",
+          "source": "hostName",
+          "reportedPath": "hostName",
+          "desiredPath": "hostName"
+        }
+      ]
+    }
+  },
+  "connectionID": "azuredevice-1",
+  "enable": true
+}

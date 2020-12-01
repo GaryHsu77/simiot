@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: azure-config
+  namespace: default
+data:
+  product: "{\"services\":[\"azuredevice\"]}"
+  application: "{\"tcpAddr\":\":80\"}"
+  twin: "{\"properties\":[],\"selections\":{},\"connectionID\":\"azuredevice-1\",\"enable\":true}"
+  myk8s-worker: "{\"provisioning\":{\"connectionString\":\"HostName=thingspro-IoTHub-newTwin.azure-devices.net;DeviceId=garyaid1;SharedAccessKey=OhcuosgIuI8gSrpV7ND2N2r7Iuo+KvaH3aoaDLStaEY=\",\"authenticationType\":\"symmetricKey\",\"enable\":true,\"supportTwin\":true,\"retryInterval\":10,\"keepAlive\":10,\"protocol\":{\"protocol\":\"mqtt\",\"port\":8883}}}"
+  myk8s-worker2: "{\"provisioning\":{\"connectionString\":\"HostName=thingspro-IoTHub-newTwin.azure-devices.net;DeviceId=garyaid2;SharedAccessKey=3CewtRtIzSEwLgRkpu6tJbyYoEQJiq5ljHTvT2XfgZc=\",\"authenticationType\":\"symmetricKey\",\"enable\":true,\"supportTwin\":true,\"retryInterval\":10,\"keepAlive\":10,\"protocol\":{\"protocol\":\"mqtt\",\"port\":8883}}}"
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: northbound-daemon
+  labels:
+    app: northbound
+spec:
+  selector:
+    matchLabels:
+      app: northbound
+  template:
+    metadata:
+      labels:
+        app: northbound
+    spec:
+      initContainers:
+      - name: node2pod
+        image: busybox:1.28
+        command:
+        - "sh"
+        - "-c"
+        - "cat /var/thingspro/${NODE_NAME} > /tmp/azuredevice.json"
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: connection-volume
+          mountPath: /tmp/azuredevice.json
+        - name: azure-volume
+          mountPath: /var/thingspro
+      containers:
+      - name: cloud
+        image: bibbylong/iiot-clouds:2.2.0-armhf
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: azure-volume
+          mountPath: /var/thingspro/cloud/env/product.json
+          subPath: product
+        - name: azure-volume
+          mountPath: /var/thingspro/cloud/setting/.configuration
+          subPath: application
+        - name: azure-volume
+          mountPath: /var/thingspro/cloud/setting/twin/azuredevice-1.json
+          subPath: twin
+        - name: connection-volume
+          mountPath: /var/thingspro/cloud/setting/azuredevice/azuredevice.json
+      volumes:
+      - name: azure-volume
+        configMap:
+          name: azure-config
+      - name: connection-volume
+        hostPath:
+          path: /tmp/azuredevice.json
+          type: FileOrCreate

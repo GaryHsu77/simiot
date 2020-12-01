@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- name: azure-config
+  files:
+  - product=conf/product.json
+  - application=conf/application.json
+  - twin=conf/tank_twin.json
+  - myk8s-worker=conf/tank1F.json
+  - myk8s-worker2=conf/tank2F.json
+resources:
+- deployment.yaml
